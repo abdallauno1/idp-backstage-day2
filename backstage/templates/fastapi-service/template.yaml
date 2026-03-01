@@ -1,0 +1,33 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: fastapi-golden-path
+  title: FastAPI Service (Golden Path)
+  description: Scaffold a GitOps-ready service with CI validations, TechDocs, and Backstage catalog entity.
+spec:
+  owner: team-platform
+  type: service
+  parameters:
+    - title: Service details
+      required: [name, owner]
+      properties:
+        name: { title: Service name, type: string }
+        owner: { title: Owner, type: string }
+        description: { title: Description, type: string }
+  steps:
+    - id: fetch
+      name: Fetch skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+    - id: next
+      name: Next steps
+      action: debug:log
+      input:
+        message: |
+          Rendered.
+          Enable publish:github to create a repo automatically.

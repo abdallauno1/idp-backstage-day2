@@ -1,0 +1,8 @@
+%% Day 2 — Golden Path: Backstage Scaffolder + CI + GitOps
+flowchart LR
+  Dev[Developer] --> BS[Backstage Portal]
+  BS -->|Scaffold Template| Repo[New Service Repo Structure]
+  Repo --> CI[CI Pipeline\n(kubeconform, trivy, syft)]
+  CI --> Artifacts[SBOM + Reports]
+  Repo --> Argo[Argo CD Sync]
+  Argo --> Svc[Service Deployed]

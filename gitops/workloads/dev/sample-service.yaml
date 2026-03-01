@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sample-service-fastapi
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<YOUR_GITHUB>/idp-platform-day2.git
+    targetRevision: main
+    path: sample-service-fastapi/k8s/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sample-service
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

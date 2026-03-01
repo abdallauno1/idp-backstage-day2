@@ -1,0 +1,3 @@
+site_name: Sample Service (FastAPI)
+nav:
+  - Home: index.md

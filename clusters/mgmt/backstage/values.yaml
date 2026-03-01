@@ -1,0 +1,113 @@
+# Backstage Helm values (Day 2) — local demo
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 7007
+
+appConfig:
+  app:
+    title: "Abdalla Mady — Internal Developer Platform (Day 2)"
+    baseUrl: "http://localhost:7007"
+
+  backend:
+    baseUrl: "http://localhost:7007"
+    listen:
+      port: 7007
+    database:
+      client: better-sqlite3
+      connection: ":memory:"
+
+  techdocs:
+    builder: local
+    generator:
+      runIn: local
+    publisher:
+      type: local
+
+  catalog:
+    locations:
+      - type: file
+        target: /app/catalog/catalog-info.yaml
+
+extraVolumeMounts:
+  - name: backstage-catalog
+    mountPath: /app/catalog
+
+extraVolumes:
+  - name: backstage-catalog
+    configMap:
+      name: backstage-catalog
+
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: backstage-catalog
+      namespace: backstage
+    data:
+      catalog-info.yaml: |
+        apiVersion: backstage.io/v1alpha1
+        kind: Location
+        metadata:
+          name: idp-day2
+          description: Day 2 catalog (components + templates)
+        spec:
+          targets:
+            - ./entities/sample-service.yaml
+            - ./entities/fastapi-golden-path.yaml
+
+      entities/sample-service.yaml: |
+        apiVersion: backstage.io/v1alpha1
+        kind: Component
+        metadata:
+          name: sample-service-fastapi
+          description: Sample service deployed via Argo CD
+          annotations:
+            backstage.io/techdocs-ref: dir:../../backstage/techdocs/sample-service
+        spec:
+          type: service
+          lifecycle: experimental
+          owner: team-platform
+
+      entities/fastapi-golden-path.yaml: |
+        apiVersion: scaffolder.backstage.io/v1beta3
+        kind: Template
+        metadata:
+          name: fastapi-golden-path
+          title: FastAPI Service (Golden Path)
+          description: Scaffold a GitOps-ready service with CI validations, TechDocs, and catalog entity.
+        spec:
+          owner: team-platform
+          type: service
+          parameters:
+            - title: Service details
+              required: [name, owner]
+              properties:
+                name:
+                  title: Service name
+                  type: string
+                owner:
+                  title: Owner
+                  type: string
+                description:
+                  title: Description
+                  type: string
+          steps:
+            - id: fetch
+              name: Render template
+              action: fetch:template
+              input:
+                url: ./templates/fastapi-service/skeleton
+                values:
+                  name: ${{ parameters.name }}
+                  owner: ${{ parameters.owner }}
+                  description: ${{ parameters.description }}
+            - id: next
+              name: Next steps
+              action: debug:log
+              input:
+                message: |
+                  Template rendered for ${{ parameters.name }}.
+                  For GitHub publishing: configure GitHub integration and use publish:github.
